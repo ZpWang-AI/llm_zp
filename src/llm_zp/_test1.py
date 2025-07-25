@@ -112,34 +112,59 @@ None'''}
 #     },
 # ]
 
+conversation1 = [
+    {
+        "role": "user",
+        "content": [
+            {'type': 'text', 'text': '''hello world'''}
+        ],
+    },
+]
+conversation2 = [
+    {
+        "role": "user",
+        "content": [
+            {'type': 'text', 'text': '''hello'''},
+            {'type': 'text', 'text': ''' world'''},
+        ],
+    },
+]
 
-image_inputs, video_inputs = process_vision_info(conversation)
-# print(image_inputs)
-# print(video_inputs)
-# print(gap_line())
-# print([p.shape for p in video_inputs])
-# return
-processor = AutoProcessor.from_pretrained(
-    model.model_or_model_path,
-    use_fast=True,
-)
-text = processor.apply_chat_template(
-    conversation, 
-    add_generation_prompt=True, 
-    tokenize=False
-)
-inputs = processor(
-    text=[text],
-    images=image_inputs,
-    videos=video_inputs,
-    padding=True,
-    return_tensors="pt",
-    fps=15,
-)
-print(inputs)
-inputs_id = inputs['input_ids'].numpy().tolist()
-print(inputs_id)
-auto_dump(inputs_id, path('/home/zhipang/PhysicalDynamics/src/ManualAnnotationSystem')/'~inputs_id2.json')
+def get_input_ids(conversation):
+    image_inputs, video_inputs = process_vision_info(conversation)
+    # print(image_inputs)
+    # print(video_inputs)
+    # print(gap_line())
+    # print([p.shape for p in video_inputs])
+    # return
+    processor = AutoProcessor.from_pretrained(
+        model.model_or_model_path,
+        use_fast=True,
+    )
+    text = processor.apply_chat_template(
+        conversation, 
+        add_generation_prompt=True, 
+        tokenize=False
+    )
+    inputs = processor(
+        text=[text],
+        images=image_inputs,
+        videos=video_inputs,
+        padding=True,
+        return_tensors="pt",
+        fps=15,
+    )
+    # print(inputs)
+    input_ids = inputs['input_ids'].numpy().tolist()
+    # print(inputs_id)
+    return input_ids
+
+input_ids1 = get_input_ids(conversation1)
+auto_dump(input_ids1, path('/home/zhipang/LLM_usage/src/llm_zp')/'~inputs_id1.json')
+input_ids2 = get_input_ids(conversation2)
+auto_dump(input_ids2, path('/home/zhipang/LLM_usage/src/llm_zp')/'~inputs_id2.json')
+
+print(len(input_ids1[0]),len(input_ids2[0]))
 exit()
 # return
 

@@ -19,7 +19,16 @@ class QwenOmni:
         input_device:Literal['auto', 'cuda:0', 'cuda:1']='auto'
     ):
 
+        self.model = None
+        self.processor = None
+        self.model_or_model_path = model_or_model_path
+        # self.model_arg_map = model_arg_map
+        self.mode = mode
+        self.input_device = input_device
 
+    @property
+    def model_arg_map(self):
+        mode = self.mode
         if mode == 'auto':
             model_arg_map = {
                 'torch_dtype': 'auto',
@@ -49,12 +58,7 @@ class QwenOmni:
             }
         else:
             raise Exception(f'wrong mode: {mode}')
-
-        self.model = None
-        self.processor = None
-        self.model_or_model_path = model_or_model_path
-        self.model_arg_map = model_arg_map
-        self.input_device = input_device
+        return model_arg_map
 
     def load_model(self):
         from transformers import Qwen2_5OmniForConditionalGeneration, Qwen2_5OmniProcessor
@@ -118,7 +122,7 @@ class QwenOmni:
 
 
 if __name__ == '__main__':
-    os.environ['CUDA_VISIBLE_DEVICES'] = '4,5,6,7'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '6,7'
 
     conversation = [
         {

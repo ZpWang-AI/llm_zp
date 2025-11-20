@@ -15,6 +15,7 @@ class QwenVL:
         # mode:Literal['auto', 'bf16', '4bit', '8bit']='bf16', 
         mode:Literal['auto']='auto', 
         input_device:Literal['auto', 'cuda:0', 'cuda:1']='auto',
+        max_new_tokens=1024,
     ):
         if mode == 'auto':
             model_arg_map = {
@@ -51,6 +52,7 @@ class QwenVL:
         self.model_or_model_path = model_or_model_path
         self.model_arg_map = model_arg_map
         self.input_device = input_device
+        self.max_new_tokens = max_new_tokens
     
     def load_model(self):
         from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
@@ -100,8 +102,9 @@ class QwenVL:
             inputs = inputs.to(model.device).to(model.dtype)
         else:
             inputs = inputs.to(input_device).to(model.dtype)
+        # assert inputs.inputs_ids.shape[0] == 1
 
-        generated_ids = model.generate(**inputs, max_new_tokens=1024)
+        generated_ids = model.generate(**inputs, max_new_tokens=self.max_new_tokens)
         generated_ids_trimmed = [
             out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
         ]

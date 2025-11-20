@@ -89,8 +89,9 @@ class InternVL3_5:
             inputs = inputs.to(model.device).to(model.dtype)
         else:
             inputs = inputs.to(input_device).to(model.dtype)
+        assert inputs['inputs_ids'].shape[0] == 1
 
-        print(inputs)
+        # print(inputs)
         generated_ids = model.generate(**inputs, max_new_tokens=self.max_new_tokens)
 
         decoded_output = processor.decode(generated_ids[0, inputs["input_ids"].shape[1] :], skip_special_tokens=True)
@@ -153,6 +154,6 @@ None'''}
     ]
     print()
     print(
-        InternVL3_5()(conversation)[0]
+        InternVL3_5()(conversation)
 
     )

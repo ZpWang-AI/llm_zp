@@ -66,7 +66,7 @@ class InternVL3_5:
                 use_fast=True,
             )
 
-    def __call__(self, conversation, only_output_assistant:bool=True, fps:float=15):
+    def __call__(self, conversation, num_frames:int=20) -> str:
         from transformers import InternVLProcessor
 
         if not self.model or not self.processor:
@@ -81,7 +81,7 @@ class InternVL3_5:
             add_generation_prompt=True,
             tokenize=True,
             return_dict=True,
-            num_frames=8,
+            num_frames=num_frames,
             # fps=fps,
         )
 

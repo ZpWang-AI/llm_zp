@@ -89,7 +89,7 @@ class InternVL3_5:
             inputs = inputs.to(model.device).to(model.dtype)
         else:
             inputs = inputs.to(input_device).to(model.dtype)
-        assert inputs['inputs_ids'].shape[0] == 1
+        assert inputs['input_ids'].shape[0] == 1
 
         # print(inputs)
         generated_ids = model.generate(**inputs, max_new_tokens=self.max_new_tokens)

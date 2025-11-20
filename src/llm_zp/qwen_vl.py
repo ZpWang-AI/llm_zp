@@ -16,6 +16,8 @@ class QwenVL:
         mode:Literal['auto']='auto', 
         input_device:Literal['auto', 'cuda:0', 'cuda:1']='auto',
         max_new_tokens=1024,
+
+        batch_output = True,
     ):
         if mode == 'auto':
             model_arg_map = {
@@ -53,6 +55,8 @@ class QwenVL:
         self.model_arg_map = model_arg_map
         self.input_device = input_device
         self.max_new_tokens = max_new_tokens
+
+        self.batch_output = batch_output
     
     def load_model(self):
         from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
@@ -114,7 +118,7 @@ class QwenVL:
 
         # if only_output_assistant:
         #     text = [p.split('assistant\n', 1)[1] for p in text]
-        return output_text
+        return output_text if self.batch_output else output_text[0]
 
 
 if __name__ == '__main__':

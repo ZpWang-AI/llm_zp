@@ -3,13 +3,12 @@ from utils_zp import *
 from hashlib import blake2b
 
 class RecordDatabase:
-    def __init__(self, data_dir, hash_space = 10**5, hash_stack_size = 100):
-        import math
+    def __init__(self, data_dir, digest_size=2):
         self.data_dir = path(data_dir)
         make_path(self.data_dir)
 
-        self.digest_size = int(math.log(hash_space/hash_stack_size, 16))
-        self.digest_size = max(1, self.digest_size)
+        assert digest_size >= 1
+        self.digest_size = digest_size
 
     def _hash(self, s:str) -> str:
         return blake2b(str(s).encode(), digest_size=self.digest_size).hexdigest()

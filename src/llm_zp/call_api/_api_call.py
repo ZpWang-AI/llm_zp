@@ -3,8 +3,6 @@ from utils_zp import *
 import openai
 from openai import OpenAI
 
-from ._record_data import RecordDatabase
-
 
 class APICalling:
     def __init__(
@@ -17,18 +15,18 @@ class APICalling:
         record_dir=None, 
         print_input_output=False,
     ):
-        local_dir = path(__file__).parent / '~tmp'
         self.client = OpenAI(
             api_key=api_key, base_url=base_url
         )
         self.model = model
 
+        local_dir = path(__file__).parent / '~tmp'
         self.error_jsonl = error_jsonl if error_jsonl is not None else local_dir / 'err.jsonl'
         self.do_record = do_record
         if do_record:
-            self.record_db = RecordDatabase(record_dir if record_dir is not None else local_dir / str(model))
+            if record_dir is None: record_dir = local_dir / str(model)
+            self.record_db = FileDict(record_dir)
         self.print_input_output = print_input_output
-
     
     def __chat(self, query:str):
         response = self.client.chat.completions.create(
@@ -60,9 +58,11 @@ class APICalling:
             print(query)
             print(gap_line(fillchar='-'))
 
-        if self.do_record and query in self.record_db:
+        ans = None
+        if self.do_record:
             ans = self.record_db[query]
-        else:
+        
+        if not ans:
             try:
                 if do_embed:
                     ans = self.__embed(query, dimensions=embed_dimensions)

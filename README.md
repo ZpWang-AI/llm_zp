@@ -1,25 +1,53 @@
 # LLM_API
 
-Call the API, and make use of the reasoning capability of LLM
+Use LLM by API or local model.
 
-
-## Running Tips
+## Quick Start
 
 1. installation
 
-~~~shell
-git clone https://github.com/ZpWang-AI/utils_zp.git ~/utils_zp
-pip install -e ~/utils_zp
-
-git clone https://github.com/ZpWang-AI/LLM_usage.git ~/LLM_usage
-pip install -e ~/LLM_usage
+~~~sh
+pip install -r requirements.txt
 ~~~
 
 2. usage
 
 ~~~python
-from llm_zp import *
-...
+from llm_zp import QwenVL
+qwenvl = QwenVL('Qwen/Qwen2.5-7B-Instruct')
+query = [
+    {
+        "role": "system",
+        "content": [
+            {"type": "text", "text": "You are Qwen, a virtual human developed by the Qwen Team, Alibaba Group, capable of perceiving auditory and visual inputs, as well as generating text and speech."}
+        ],
+    },
+    {
+        "role": "user",
+        "content": [
+            {
+                "type": "video",
+                "video": "file:///home/test.mp4",
+                "max_pixels": 128 * 128,
+                "fps": 15.0,
+            },
+            {'type': 'text', 'text': 'hello world'}
+        ],
+    },
+]
+answer = qwenvl(query)[0]
+~~~
+
+~~~python
+from llm_zp import APICalling
+api = APICalling(
+    api_key='xxx',
+    base_url='',
+    model='',
+)
+query = 'hello world'
+answer = api(query)
+print(answer)
 ~~~
 
 

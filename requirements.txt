@@ -1,4 +1,5 @@
-utils_zp
+git+https://github.com/ZpWang-AI/utils_zp.git
 
-openai==1.40.2
+# openai==1.40.2
+openai
 transformers

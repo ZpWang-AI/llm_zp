@@ -41,7 +41,7 @@ class _LLMBaseClass:
                     if content['type'] == 'video':
                         cur_num_frames = int(Video_custom(content['video']).duration*fps)
                         max_num_frames = max(max_num_frames, cur_num_frames)
-            num_frames = max_num_frames
+            num_frames = max_num_frames if max_num_frames > 0 else None
 
         inputs = self.processor.apply_chat_template(
             conversation,

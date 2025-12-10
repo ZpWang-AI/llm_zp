@@ -13,8 +13,8 @@ pip install -r requirements.txt
 2. usage
 
 ~~~python
-from llm_zp import QwenVL
-qwenvl = QwenVL('Qwen/Qwen2.5-7B-Instruct')
+from llm_zp import Qwen2_5_VL
+Qwen2_5_VL = Qwen2_5_VL('Qwen/Qwen2.5-7B-Instruct')
 query = [
     {
         "role": "system",
@@ -27,7 +27,7 @@ query = [
         "content": [
             {
                 "type": "video",
-                "video": "file:///home/test.mp4",
+                "video": "https://qianwen-res.oss-cn-beijing.aliyuncs.com/Qwen2-VL/space_woaudio.mp4",
                 "max_pixels": 128 * 128,
                 "fps": 15.0,
             },
@@ -35,7 +35,8 @@ query = [
         ],
     },
 ]
-answer = qwenvl(query)[0]
+answer = Qwen2_5_VL(query)
+print(answer)
 ~~~
 
 ~~~python

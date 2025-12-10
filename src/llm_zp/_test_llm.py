@@ -20,8 +20,6 @@ conversation = [
             {
                 "type": "video", 
                 "video": "/home/zhipang/PhysicalDynamics/src/ManualAnnotationSystem/test2.mp4",
-                "max_pixels": 128 * 128,
-                "fps": 15.0,
             },
             {'type': 'text', 'text': '''describe this video'''},
         ],
@@ -29,8 +27,11 @@ conversation = [
 ]
 num_frames = 10
 fps = 1
+
+print(type(model))
 print(gap_line())
-print(model.show_tokenized_inputs(conversation=conversation, num_frames=num_frames, fps=fps))
+model.show_tokenized_inputs(conversation=conversation, num_frames=num_frames, fps=fps)
 print(gap_line())
+# exit()
 print(model(conversation=conversation, num_frames=num_frames, fps=fps))
 print(gap_line())

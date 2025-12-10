@@ -4,7 +4,7 @@ from utils_zp import *
 class _LLMBaseClass:
     def __init__(
         self,
-        model_or_model_path='/home/zhipang/pretrained_models/LLaVA-NeXT-Video-7B-hf',
+        model_or_model_path,
         max_new_tokens=1024,
         mode:Literal['bf16']='bf16', 
         input_device:Literal['auto', 'cuda:0', 'cuda:1']='auto',
@@ -27,13 +27,22 @@ class _LLMBaseClass:
     def processor(self): 
         if self._processor is None:
             from transformers import AutoProcessor
-            self.processor = AutoProcessor.from_pretrained(
+            self._processor = AutoProcessor.from_pretrained(
                 self.model_or_model_path,
                 use_fast=True,
             )
         return self._processor
 
-    def tokenize(self, conversation, num_frames:int=None, fps:float=None):
+    def tokenize(self, conversation, fps:float=None, num_frames:int=None):
+        if fps is not None:
+            max_num_frames = -1
+            for qa in conversation:
+                for content in qa['content']:
+                    if content['type'] == 'video':
+                        cur_num_frames = int(Video_custom(content['video']).duration*fps)
+                        max_num_frames = max(max_num_frames, cur_num_frames)
+            num_frames = max_num_frames
+
         inputs = self.processor.apply_chat_template(
             conversation,
             return_tensors="pt",
@@ -44,12 +53,12 @@ class _LLMBaseClass:
         )
         return inputs
     
-    def show_tokenized_inputs(self, conversation, num_frames:int=None, fps:float=None):
+    def show_tokenized_inputs(self, conversation, fps:float=None, num_frames:int=None):
         inputs = self.tokenize(conversation, num_frames=num_frames, fps=fps)
         for k in inputs:
-            print(k, inputs[k].shape)
+            print(k, ':', inputs[k].shape)
 
-    def __call__(self, conversation, num_frames:int=None, fps:float=None):
+    def __call__(self, conversation, fps:float=None, num_frames:int=None):
         inputs = self.tokenize(conversation, num_frames=num_frames, fps=fps)
         if self.input_device == 'auto':
             inputs = inputs.to(self.model.device).to(self.model.dtype)
@@ -69,8 +78,8 @@ class _LLMBaseClass:
             generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
         )
         if self.batch_output:
+            return output_text
+        else:
             assert len(output_text)==1
             return output_text[0]
-        else:
-            return output_text
         

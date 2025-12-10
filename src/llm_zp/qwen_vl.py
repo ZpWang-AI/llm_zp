@@ -35,7 +35,19 @@ class Qwen2_5_VL(_LLMBaseClass):
         
         return self._model
     
-    def tokenize(self, conversation, num_frames = None, fps = None):
+    def tokenize(self, conversation, fps:float=None, num_frames:int=None):
+        if fps is not None:
+            for qa in conversation:
+                for content in qa['content']:
+                    if content['type'] == 'video':
+                        content['fps'] = fps
+        elif num_frames is not None:
+            for qa in conversation:
+                for content in qa['content']:
+                    if content['type'] == 'video':
+                        cur_video = Video_custom(video['video'])
+                        content['fps'] = num_frames / cur_video.duration
+
         from qwen_vl_utils import process_vision_info
         text = self.processor.apply_chat_template(
             conversation,
@@ -50,7 +62,6 @@ class Qwen2_5_VL(_LLMBaseClass):
             videos=video_inputs,
             padding=True,
             return_tensors="pt",
-            fps=fps,
             **video_kwargs
         )
         return inputs

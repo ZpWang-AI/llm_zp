@@ -7,6 +7,7 @@ class LLaMAFactoryBase:
         dic = dataclasses.asdict(self)
         for k in list(dic.keys()):
             if dic[k] is None: del dic[k]
+            elif isinstance(dic[k], path): dic[k] = str(dic[k])
         return dic
     
     @property
@@ -19,6 +20,8 @@ class LLaMAFactoryBase:
             for k in env_dict: env[k] = env_dict[k]
         
         try:
+            print('>', ' '.join(cmd))
+            print(f"> log file: {log_filepath}")
             with open(log_filepath, "w") as log_file:
                 result = subprocess.run(
                     cmd,
@@ -34,13 +37,14 @@ class LLaMAFactoryBase:
                     log_file.write(f"\n{gap_line('ERROR')}\n")
                     log_file.write(result.stderr)
             if result.returncode != 0:
-                print(f"命令执行失败，返回码: {result.returncode}")
-                print(f"错误信息已写入日志文件")
+                print(f"> Fail! return code: {result.returncode}")
                 return False
-            return True
+            else:
+                print(f'> Done!')
+                return True
             
         except Exception as e:
-            print(f"执行命令时出错: {e}")
+            print(f"Error: {e}")
             return False
 
 
@@ -73,7 +77,7 @@ class LLaMAFactorySFTLora(LLaMAFactoryBase):
     cutoff_len:int = 32768  # internvl
     # ===========================================
 
-    trust_remote_code:bool = True,
+    trust_remote_code:bool = True
 
     ### method
     stage:str = 'sft'
@@ -113,7 +117,7 @@ class LLaMAFactorySFTLora(LLaMAFactoryBase):
         time_str = Datetime_().format_str('%Y-%m-%d_%H-%M-%S')
         yaml_file = output_dir / f'sftlora_{time_str}.yaml'
         auto_dump(self.dict, yaml_file)
-        log_filepath = output_dir / 'log.txt'; make_path(log_filepath)
+        log_filepath = output_dir / 'log.txt'
         cmd = ["llamafactory-cli", "train", str(yaml_file)]
         
         self.run_cmd(
@@ -141,7 +145,7 @@ class LLaMAFactoryMergeLora(LLaMAFactoryBase):
         time_str = Datetime_().format_str('%Y-%m-%d_%H-%M-%S')
         yaml_file = output_dir / f'mergelora_{time_str}.yaml'
         auto_dump(self.dict, yaml_file)
-        log_filepath = output_dir / 'log.txt'; make_path(log_filepath)
+        log_filepath = output_dir / 'log.txt'
         cmd = ["llamafactory-cli", "export", str(yaml_file)]
 
         self.run_cmd(

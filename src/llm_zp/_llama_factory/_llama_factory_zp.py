@@ -3,7 +3,12 @@ from utils_zp import *
 
 class LLaMAFactoryBase:
     @property
-    def dict(self) -> dict: return dataclasses.asdict(self)
+    def dict(self) -> dict: 
+        dic = dataclasses.asdict(self)
+        for k in list(dic.keys()):
+            if dic[k] is None: del dic[k]
+        return dic
+    
     @property
     def dic(self): return self.dict
 
@@ -41,8 +46,8 @@ class LLaMAFactoryBase:
 
 @dataclass
 class LLaMAFactorySFTLora(LLaMAFactoryBase):
-    model:str
-    adapter:str
+    model_name_or_path:str
+    adapter_name_or_path:str
     template:str
     dataset:str
     output_dir:str

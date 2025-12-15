@@ -27,15 +27,16 @@ class LLaMAFactoryBase:
                     cmd,
                     env=env,
                     stdout=log_file,
-                    stderr=subprocess.PIPE,  # 分开捕获错误
+                    # stderr=subprocess.PIPE,  # 分开捕获错误
+                    stderr=log_file,
                     text=True,
                     check=False,  # 不自动抛出异常
-                    encoding=utf8
+                    encoding=utf8,
                 )
-            if result.stderr:
-                with open(log_filepath, "a", encoding=utf8) as log_file:
-                    log_file.write(f"\n{gap_line('ERROR')}\n")
-                    log_file.write(result.stderr)
+            # if result.stderr:
+            #     with open(log_filepath, "a", encoding=utf8) as log_file:
+            #         log_file.write(f"\n{gap_line('ERROR')}\n")
+            #         log_file.write(result.stderr)
             if result.returncode != 0:
                 print(f"> Fail! return code: {result.returncode}")
                 return False
@@ -82,6 +83,7 @@ class LLaMAFactorySFTLora(LLaMAFactoryBase):
     ### method
     stage:str = 'sft'
     do_train:bool = True
+    flash_attn:str = 'auto'
     finetuning_type:str = 'lora'
     lora_target:str = 'all'
 

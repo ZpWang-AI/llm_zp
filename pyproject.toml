@@ -1,7 +1,7 @@
 [project]
-name = "LLM_usage"
+name = "llm_zp"
 version = "2.2.0"
-description = "LLM usage utils"
+description = "LLM usage utils of zp"
 # requires-python = ">=3.8"
 dependencies = [
     # "numpy", "pandas"

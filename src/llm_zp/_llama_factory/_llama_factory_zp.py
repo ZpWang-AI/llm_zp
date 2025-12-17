@@ -14,29 +14,35 @@ class LLaMAFactoryBase:
     def dic(self): return self.dict
 
     @staticmethod
-    def run_cmd(cmd, log_filepath, env_dict=None):
+    def run_cmd(cmd, log_filepath=None, env_dict=None):
         env = os.environ.copy()
         if env_dict:
             for k in env_dict: env[k] = env_dict[k]
         
         try:
             print('>', ' '.join(cmd))
-            print(f"> log file: {log_filepath}")
-            with open(log_filepath, "w") as log_file:
+            if log_filepath is not None:
+                print(f"> log file: {log_filepath}")
+                with open(log_filepath, "w", encoding=utf8) as log_file:
+                    result = subprocess.run(
+                        cmd,
+                        env=env,
+                        stdout=log_file,
+                        # stderr=subprocess.PIPE,  # 分开捕获错误
+                        stderr=log_file,
+                        text=True,
+                        check=False,  # 不自动抛出异常
+                        encoding=utf8,
+                    )
+                with open(log_filepath, 'a', encoding=utf8)as log_file:
+                    log_file.write(f'\n{gap_line('Done')}\n')
+            else:
                 result = subprocess.run(
                     cmd,
                     env=env,
-                    stdout=log_file,
-                    # stderr=subprocess.PIPE,  # 分开捕获错误
-                    stderr=log_file,
-                    text=True,
-                    check=False,  # 不自动抛出异常
-                    encoding=utf8,
+                    check=True,
                 )
-            # if result.stderr:
-            #     with open(log_filepath, "a", encoding=utf8) as log_file:
-            #         log_file.write(f"\n{gap_line('ERROR')}\n")
-            #         log_file.write(result.stderr)
+
             if result.returncode != 0:
                 print(f"> Fail! return code: {result.returncode}")
                 return False
@@ -110,7 +116,7 @@ class LLaMAFactorySFTLora(LLaMAFactoryBase):
     ddp_timeout:int = 180000000
     resume_from_checkpoint:str = None
 
-    def start(self, cuda_visible, llama_factory_dir):
+    def start(self, cuda_visible, llama_factory_dir, log_to_file=True):
         llama_factory_dir = path(llama_factory_dir)
         assert llama_factory_dir.exists()
         os.chdir(llama_factory_dir)
@@ -118,8 +124,8 @@ class LLaMAFactorySFTLora(LLaMAFactoryBase):
         output_dir = path(self.output_dir); make_path(output_dir)
         time_str = Datetime_().format_str('%Y-%m-%d_%H-%M-%S')
         yaml_file = output_dir / f'sftlora_{time_str}.yaml'
-        auto_dump(self.dict, yaml_file)
-        log_filepath = output_dir / 'log.txt'
+        auto_dump(self.dict, yaml_file); print(f'> yaml file: {yaml_file}')
+        log_filepath = output_dir / 'log' if log_to_file else None
         cmd = ["llamafactory-cli", "train", str(yaml_file)]
         
         self.run_cmd(
@@ -142,12 +148,12 @@ class LLaMAFactoryMergeLora(LLaMAFactoryBase):
     export_device:str = 'auto' # choices: [cpu, auto]
     export_legacy_format:str = 'false'
 
-    def start(self,):
+    def start(self, log_to_file=True):
         output_dir = path(self.export_dir); make_path(output_dir)
         time_str = Datetime_().format_str('%Y-%m-%d_%H-%M-%S')
         yaml_file = output_dir / f'mergelora_{time_str}.yaml'
-        auto_dump(self.dict, yaml_file)
-        log_filepath = output_dir / 'log.txt'
+        auto_dump(self.dict, yaml_file); print(f'> yaml file: {yaml_file}')
+        log_filepath = output_dir / 'log' if log_to_file else None
         cmd = ["llamafactory-cli", "export", str(yaml_file)]
 
         self.run_cmd(

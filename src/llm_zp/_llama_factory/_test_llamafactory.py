@@ -2,6 +2,7 @@ from utils_zp import *
 from llm_zp import *
 
 '''
+hf download --resume-download Qwen/Qwen3-VL-2B-Instruct --local-dir ./Qwen/Qwen3-VL-2B-Instruct
 huggingface-cli download --resume-download Qwen/Qwen3-VL-2B-Instruct --local-dir ./Qwen/Qwen3-VL-2B-Instruct
 '''
 

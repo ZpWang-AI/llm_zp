@@ -19,40 +19,71 @@ class LLaMAFactoryBase:
         if env_dict:
             for k in env_dict: env[k] = env_dict[k]
         
-        try:
-            print('>', ' '.join(cmd))
-            if log_filepath is not None:
-                print(f"> log file: {log_filepath}")
-                with open(log_filepath, "w", encoding=utf8) as log_file:
-                    result = subprocess.run(
-                        cmd,
-                        env=env,
-                        stdout=log_file,
-                        # stderr=subprocess.PIPE,  # 分开捕获错误
-                        stderr=log_file,
-                        text=True,
-                        check=False,  # 不自动抛出异常
-                        encoding=utf8,
-                    )
-                with open(log_filepath, 'a', encoding=utf8)as log_file:
-                    log_file.write(f'\n{gap_line('Done')}\n')
-            else:
-                result = subprocess.run(
+        print('>', ' '.join(cmd))
+        
+        if log_filepath is not None:
+            print(f"> log file: {log_filepath}")
+
+            def read_output(pipe, file_handle, is_stderr=False):
+                try:
+                    with pipe:
+                        for line in iter(pipe.readline, ''):
+                            if line:
+                                file_handle.write(line)
+                                file_handle.flush()
+                                
+                                if is_stderr:
+                                    # sys.stderr.write(f"\033[91m{line}\033[0m")
+                                    sys.stderr.write(line)
+                                else:
+                                    sys.stdout.write(line)
+                except Exception as e:
+                    print(f"Error reading output: {e}")
+            
+            with open(log_filepath, "w", encoding=utf8) as log_file:
+                log_file.write(gap_line("Command Start")+endl*2)
+                log_file.flush()
+                
+                result = subprocess.Popen(
                     cmd,
                     env=env,
-                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    encoding=utf8,
+                    bufsize=1,  # 行缓冲
+                    universal_newlines=True
                 )
+                
+                stdout_thread = threading.Thread(target=read_output, 
+                                    args=(result.stdout, log_file, False))
+                stderr_thread = threading.Thread(target=read_output, 
+                                    args=(result.stderr, log_file, True))
+                
+                stdout_thread.start()
+                stderr_thread.start()
+                result.wait()
+                stdout_thread.join()
+                stderr_thread.join()
+                
+                log_file.write(endl+gap_line("Command End")+endl)
+                log_file.write(f"\nReturn code: {result.returncode}\n")
+        else:
+            result = subprocess.run(
+                cmd,
+                env=env,
+                check=False,
+                # text=True,
+                # encoding=utf8
+            )
 
-            if result.returncode != 0:
-                print(f"> Fail! return code: {result.returncode}")
-                return False
-            else:
-                print(f'> Done!')
-                return True
-            
-        except Exception as e:
-            print(f"Error: {e}")
+        # 检查返回码
+        if result.returncode != 0:
+            print(f"\n> Fail! return code: {result.returncode}")
             return False
+        else:
+            print(f'\n> Done!')
+            return True
 
 
 @dataclass
@@ -68,7 +99,7 @@ class LLaMAFactorySFTLora(LLaMAFactoryBase):
     lora_rank:int = 8
     learning_rate:float = 1.0e-4
     num_train_epochs:float =  3.0
-    max_samples:int = 1000000000
+    max_samples:int = None
     # ===========================================
 
     ### CUDA memory
@@ -97,6 +128,10 @@ class LLaMAFactorySFTLora(LLaMAFactoryBase):
     overwrite_cache:bool = True
     preprocessing_num_workers:int = 16
     dataloader_num_workers:int = 4
+    preprocessing_batch_size:int = None
+    streaming:bool = None
+    max_steps:int = None
+    buffer_size:int = None
     tokenized_path:str = None  # str(DATA_DIR_SFT / 'tokenized_dataset' / f'{dataset_name}__{template}')
 
     ### output
@@ -121,18 +156,20 @@ class LLaMAFactorySFTLora(LLaMAFactoryBase):
         assert llama_factory_dir.exists()
         os.chdir(llama_factory_dir)
         
-        output_dir = path(self.output_dir); make_path(output_dir)
-        time_str = Datetime_().format_str('%Y-%m-%d_%H-%M-%S')
-        yaml_file = output_dir / f'sftlora_{time_str}.yaml'
+        output_dir = path(self.output_dir); make_path(output_dir); print(output_dir)
+        yaml_file = output_dir / f'sftlora.yaml'
         auto_dump(self.dict, yaml_file); print(f'> yaml file: {yaml_file}')
-        log_filepath = output_dir / 'log' if log_to_file else None
+        log_filepath = output_dir / 'run.log' if log_to_file else None
         cmd = ["llamafactory-cli", "train", str(yaml_file)]
         
-        self.run_cmd(
-            cmd=cmd, 
-            log_filepath=log_filepath, 
-            env_dict={"CUDA_VISIBLE_DEVICES": cuda_visible},
-        )
+        try:
+            self.run_cmd(
+                cmd=cmd, 
+                log_filepath=log_filepath, 
+                env_dict={"CUDA_VISIBLE_DEVICES": cuda_visible},
+            )
+        finally:
+            make_path(file_path=path(self.output_dir)/'end')
 
 
 @dataclass

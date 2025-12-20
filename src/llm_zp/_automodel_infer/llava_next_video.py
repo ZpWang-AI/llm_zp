@@ -1,5 +1,5 @@
 from utils_zp import *
-from ._llm_base_class import _LLMBaseClass
+from ._llm_base_class import LLMBaseClass_zp
 
 """
 https://huggingface.co/llava-hf/LLaVA-NeXT-Video-7B-hf
@@ -7,7 +7,7 @@ https://huggingface.co/llava-hf/LLaVA-NeXT-Video-7B-hf
 """
 
 
-class LLaVA_NeXT_Video(_LLMBaseClass):
+class LLaVA_NeXT_Video(LLMBaseClass_zp):
     @property
     def model(self):
         if self._model is None:

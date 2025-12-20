@@ -1,5 +1,5 @@
 from utils_zp import *
-from ._llm_base_class import _LLMBaseClass
+from ._llm_base_class import LLMBaseClass_zp
 
 """
 https://huggingface.co/OpenGVLab/InternVL3_5-8B
@@ -7,7 +7,7 @@ https://huggingface.co/OpenGVLab/InternVL3_5-8B
 """
 
 
-class InternVL3_5(_LLMBaseClass):
+class InternVL3_5(LLMBaseClass_zp):
     @property
     def model(self):
         if self._model is None:

@@ -1,5 +1,5 @@
 from utils_zp import *
-from ._llm_base_class import _LLMBaseClass
+from ._llm_base_class import LLMBaseClass_zp
 
 """
 https://huggingface.co/Qwen/Qwen2.5-VL-7B-Instruct
@@ -9,7 +9,7 @@ pip install qwen_vl_utils
 """
 
 
-class Qwen2_5_VL(_LLMBaseClass):
+class Qwen2_5_VL(LLMBaseClass_zp):
     @property
     def model(self):
         if self._model is None:

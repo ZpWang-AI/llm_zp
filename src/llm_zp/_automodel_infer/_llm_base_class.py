@@ -1,7 +1,7 @@
 from utils_zp import *
 
 
-class _LLMBaseClass:
+class LLMBaseClass_zp:
     def __init__(
         self,
         model_or_model_path,

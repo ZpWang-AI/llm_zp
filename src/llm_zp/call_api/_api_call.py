@@ -1,8 +1,5 @@
 from utils_zp import *
 
-import openai
-from openai import OpenAI
-
 
 class APICalling:
     def __init__(
@@ -15,6 +12,7 @@ class APICalling:
         record_dir=None, 
         print_input_output=False,
     ):
+        from openai import OpenAI
         self.client = OpenAI(
             api_key=api_key, base_url=base_url
         )
@@ -54,6 +52,8 @@ class APICalling:
         embed_dimensions=2048,
         err_output='',
     ) -> Union[str, List[float]]:
+        import openai
+        
         if self.print_input_output:
             print(query)
             print(gap_line(fillchar='-'))

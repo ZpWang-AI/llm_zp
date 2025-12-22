@@ -1,6 +1,55 @@
 from utils_zp import *
 
 
+class ConversationInput_zp:
+    """
+~~~
+conversation = [
+    {
+        "role": "system",
+        "content": [{"type": "text", "text": "hello world"}],
+    },
+    {
+        "role": "user",
+        "content": [
+            {"type": "image", "image": "/path/to/image.jpg"},
+            {"type": "video", "video": "/home/test2.mp4"},
+            {'type': 'text', 'text': 'describe this video'},
+        ],
+    },
+]
+~~~
+"""
+
+    def __init__(self, conversation=None): 
+        self.conversation:List[Dict[str, Union[str,List[Dict[str,str]]]]] = [] if conversation is None else conversation
+
+    def __repr__(self): return str(self.conversation)
+
+    def add(
+        self, 
+        role:Literal['system','user','assistant']='user',
+        text:str=None,
+        image:str=None,
+        video:str=None,
+    ):
+        assert sum(i is not None for i in [text,image,video]) == 1
+        
+        if text is not None:
+            new_content = {'type':'text', 'text':str(text)}
+        elif image is not None:
+            assert path(image).exists()
+            new_content = {'type':'image', 'image':str(image)}
+        elif video is not None:
+            assert path(video).exists()
+            new_content = {'type':'video', 'video':str(video)}
+        
+        if role == self.conversation[-1]['role']:
+            self.conversation[-1]['content'].append(new_content)
+        else:
+            self.conversation.append({'role':role, 'content': [new_content]})
+
+
 class LLMBaseClass_zp:
     def __init__(
         self,
@@ -59,6 +108,7 @@ class LLMBaseClass_zp:
             print(k, ':', inputs[k].shape)
 
     def __call__(self, conversation, fps:float=None, num_frames:int=None):
+        if isinstance(conversation, ConversationInput_zp): conversation = conversation.conversation
         inputs = self.tokenize(conversation, num_frames=num_frames, fps=fps)
         if self.input_device == 'auto':
             inputs = inputs.to(self.model.device).to(self.model.dtype)

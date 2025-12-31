@@ -44,7 +44,7 @@ conversation = [
             assert path(video).exists()
             new_content = {'type':'video', 'video':str(video)}
         
-        if role == self.conversation[-1]['role']:
+        if self.conversation and role == self.conversation[-1]['role']:
             self.conversation[-1]['content'].append(new_content)
         else:
             self.conversation.append({'role':role, 'content': [new_content]})
@@ -55,10 +55,11 @@ class LLMBaseClass_zp:
         self,
         model_or_model_path,
         max_new_tokens=1024,
+        fps:Optional[float]=None,
+
         mode:Literal['bf16']='bf16', 
         input_device:Literal['auto', 'cuda:0', 'cuda:1']='auto',
-
-        batch_output=False
+        batch_output=False,
     ):
         self._model = None
         self._processor = None
@@ -67,6 +68,7 @@ class LLMBaseClass_zp:
         self.model_load_mode = mode
         self.input_device = input_device
 
+        self.fps = fps
         self.batch_output = batch_output
 
     @property
@@ -83,6 +85,7 @@ class LLMBaseClass_zp:
         return self._processor
 
     def tokenize(self, conversation, fps:float=None, num_frames:int=None):
+        if fps is None: fps = self.fps
         if fps is not None:
             max_num_frames = -1
             for qa in conversation:

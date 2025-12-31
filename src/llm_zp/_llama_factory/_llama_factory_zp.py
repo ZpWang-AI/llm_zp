@@ -159,17 +159,20 @@ class LLaMAFactorySFTLora(LLaMAFactoryBase):
         output_dir = path(self.output_dir); make_path(output_dir); print(output_dir)
         yaml_file = output_dir / f'sftlora.yaml'
         auto_dump(self.dict, yaml_file); print(f'> yaml file: {yaml_file}')
-        log_filepath = output_dir / 'run.log' if log_to_file else None
-        cmd = ["llamafactory-cli", "train", str(yaml_file)]
-        
+        log_filepath = output_dir / '_run.log' if log_to_file else None
+        # cmd = ["llamafactory-cli", "train", str(yaml_file)]
+        cmd = f'CUDA_VISIBLE_DEVICES={cuda_visible} llamafactory-cli train {str(yaml_file)} &> {str(log_filepath)}'
+        # cmd = f'CUDA_VISIBLE_DEVICES={cuda_visible} llamafactory-cli train {str(yaml_file)} 2>&1 | tee {str(log_filepath)}'
         try:
-            self.run_cmd(
-                cmd=cmd, 
-                log_filepath=log_filepath, 
-                env_dict={"CUDA_VISIBLE_DEVICES": cuda_visible},
-            )
+            print('>', cmd)
+            os.system(cmd)
+            # self.run_cmd(
+            #     cmd=cmd, 
+            #     log_filepath=log_filepath, 
+            #     env_dict={"CUDA_VISIBLE_DEVICES": cuda_visible},
+            # )
         finally:
-            make_path(file_path=path(self.output_dir)/'end')
+            make_path(file_path=path(self.output_dir)/'_end')
 
 
 @dataclass
@@ -190,9 +193,15 @@ class LLaMAFactoryMergeLora(LLaMAFactoryBase):
         time_str = Datetime_().format_str('%Y-%m-%d_%H-%M-%S')
         yaml_file = output_dir / f'mergelora_{time_str}.yaml'
         auto_dump(self.dict, yaml_file); print(f'> yaml file: {yaml_file}')
-        log_filepath = output_dir / 'log' if log_to_file else None
-        cmd = ["llamafactory-cli", "export", str(yaml_file)]
+        log_filepath = output_dir / '_run.log' if log_to_file else None
+        # cmd = ["llamafactory-cli", "export", str(yaml_file)]
+        cmd = f'llamafactory-cli export {str(yaml_file)} &> {str(log_filepath)}'
+        try:
+            print('>', cmd)
+            os.system(cmd)
+            # self.run_cmd(
+            #     cmd=cmd, log_filepath=log_filepath,
+            # )
+        finally:
+            make_path(file_path=path(self.output_dir)/'_end')
 
-        self.run_cmd(
-            cmd=cmd, log_filepath=log_filepath,
-        )

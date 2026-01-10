@@ -75,6 +75,11 @@ class APICalling_zp:
         return openai.OpenAI(api_key=self.api_key, base_url=self.base_url)
 
     def chat_openai(self, query:str=None, messages:list=None,) -> str:
+        """
+~~~
+[{'role': 'user', 'content': query}]
+~~~
+        """
         if query is not None:
             assert messages is None
             messages = [{'role': 'user', 'content': query}]
@@ -104,6 +109,21 @@ class APICalling_zp:
         return self._decorator(func)(query, dimensions=dimensions)
 
     def multimodal_chat_dashscope(self, messages:list) -> str:
+        """
+~~~
+[
+    {
+        "role": "user",
+        "content": [
+            {'video': 'file:///root/autodl-fs/_fs_data/PhyDy_data/data/WISA-80K/video/0/0ba50e8a7dbba5a2ea95d9a75d997eb157968d4c87663b70bfb3b38af8305802.mp4'},
+            {"text": "first, describe this vidoe."},
+            {"image": "https://img.alicdn.com/imgextra/i1/O1CN01gDEY8M1W114Hi3XcN_!!6000000002727-0-tps-1024-406.jpg"},
+            {"text": "then, solve this problem"},
+        ]
+    }
+]
+~~~
+        """
         def func(messages:list):
             from dashscope import MultiModalConversation
             response = MultiModalConversation.call(

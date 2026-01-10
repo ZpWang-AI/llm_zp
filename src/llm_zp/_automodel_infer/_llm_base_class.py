@@ -4,10 +4,14 @@ from utils_zp import *
 class ConversationInput_zp:
     """
 ~~~
-conversation = [
+llm_conversation = [
+    {"role": "system", "content": "you're a helpful AI bot",},
+    {"role": "user", "content": 'how are you',},
+]
+mllm_conversation = [
     {
         "role": "system",
-        "content": [{"type": "text", "text": "hello world"}],
+        "content": [{"type": "text", "text": "you're a helpful AI bot"}],
     },
     {
         "role": "user",
@@ -22,11 +26,21 @@ conversation = [
 """
 
     def __init__(self, conversation=None): 
-        self.conversation:List[Dict[str, Union[str,List[Dict[str,str]]]]] = [] if conversation is None else conversation
+        self.conversation:list = [] if conversation is None else conversation
+        self.conversation: List[Dict[
+            str, Union[str,List[Dict[str,str]]]
+        ]]
 
     def __repr__(self): return str(self.conversation)
 
-    def add(
+    def add_llm_content(
+        self, 
+        content:str,
+        role:Literal['system','user','assistant']='user',
+    ):
+        self.conversation.append({'role':role, 'content': content})
+
+    def add_mllm_content(
         self, 
         role:Literal['system','user','assistant']='user',
         text:str=None,
@@ -111,12 +125,15 @@ class LLMBaseClass_zp:
             print(k, ':', inputs[k].shape)
 
     def __call__(self, conversation, fps:float=None, num_frames:int=None):
-        if isinstance(conversation, ConversationInput_zp): conversation = conversation.conversation
+        if isinstance(conversation, ConversationInput_zp): 
+            conversation = conversation.conversation
         inputs = self.tokenize(conversation, num_frames=num_frames, fps=fps)
         if self.input_device == 'auto':
-            inputs = inputs.to(self.model.device).to(self.model.dtype)
+            inputs = inputs.to(self.model.device)
         else:
-            inputs = inputs.to(self.input_device).to(self.model.dtype)
+            inputs = inputs.to(self.input_device)
+        from transformers.tokenization_utils_base import BatchEncoding
+        if not isinstance(inputs, BatchEncoding): inputs = inputs.to(self.model.dtype)
         
         with torch.no_grad():
             generated_ids = self.model.generate(

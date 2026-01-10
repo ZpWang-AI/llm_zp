@@ -4,6 +4,15 @@ from .._automodel_infer import (
 )
 
 
+class LLaMAFactoryTemplate:
+    qwen2_vl = 'qwen2_vl'
+    intern_vl = 'intern_vl'
+    llava_next_video = 'llava_next_video'
+    
+    qwen3 = 'qwen3'
+    qwen3_nothink = 'qwen3_nothink'
+
+
 def get_llamafactory_template(model_name_or_path=None, model_class=None):
     qwen2vl_T = 'qwen2_vl'
     internvl_T = 'intern_vl'

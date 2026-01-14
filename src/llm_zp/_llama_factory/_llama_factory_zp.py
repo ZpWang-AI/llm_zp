@@ -212,20 +212,21 @@ class LLaMAFactorySFTLora(LLaMAFactoryBase):
         yaml_file = output_dir / f'sftlora.yaml'
         auto_dump(self.dict, yaml_file); print(f'> yaml file: {yaml_file}')
         log_filepath = output_dir / '_run.log' if log_to_file else None
-        # cmd = ["llamafactory-cli", "train", str(yaml_file)]
-        cmd = f'CUDA_VISIBLE_DEVICES={cuda_visible} llamafactory-cli train {str(yaml_file)} &> {str(log_filepath)}'
+        cmd = ["llamafactory-cli", "train", str(yaml_file)]
+        # cmd = f'CUDA_VISIBLE_DEVICES={cuda_visible} llamafactory-cli train {str(yaml_file)} &> {str(log_filepath)}'
         # cmd = f'CUDA_VISIBLE_DEVICES={cuda_visible} llamafactory-cli train {str(yaml_file)} 2>&1 | tee {str(log_filepath)}'
         try:
             print('>', cmd)
             # exit()
-            os.system(cmd)
-            # self.run_cmd(
-            #     cmd=cmd, 
-            #     log_filepath=log_filepath, 
-            #     env_dict={"CUDA_VISIBLE_DEVICES": cuda_visible},
-            # )
-        finally:
+            # os.system(cmd)
+            self.run_cmd(
+                cmd=cmd, 
+                log_filepath=log_filepath, 
+                env_dict={"CUDA_VISIBLE_DEVICES": cuda_visible},
+            )
+        except BaseException as err:
             make_path(file_path=path(self.output_dir)/'_end')
+            raise err
 
 
 @dataclass
@@ -247,14 +248,15 @@ class LLaMAFactoryMergeLora(LLaMAFactoryBase):
         yaml_file = output_dir / f'mergelora_{time_str}.yaml'
         auto_dump(self.dict, yaml_file); print(f'> yaml file: {yaml_file}')
         log_filepath = output_dir / '_run.log' if log_to_file else None
-        # cmd = ["llamafactory-cli", "export", str(yaml_file)]
-        cmd = f'llamafactory-cli export {str(yaml_file)} &> {str(log_filepath)}'
+        cmd = ["llamafactory-cli", "export", str(yaml_file)]
+        # cmd = f'llamafactory-cli export {str(yaml_file)} &> {str(log_filepath)}'
         try:
             print('>', cmd)
-            os.system(cmd)
-            # self.run_cmd(
-            #     cmd=cmd, log_filepath=log_filepath,
-            # )
-        finally:
-            make_path(file_path=path(self.output_dir)/'_end')
+            # os.system(cmd)
+            self.run_cmd(
+                cmd=cmd, log_filepath=log_filepath,
+            )
+        except BaseException as err:
+            make_path(file_path=path(self.export_dir)/'_end')
+            raise err
 

@@ -68,6 +68,7 @@ class LLMBaseClass_zp:
     def __init__(
         self,
         model_or_model_path,
+        adapter_path=None,
         max_new_tokens=1024,
         fps:Optional[float]=None,
 
@@ -78,6 +79,7 @@ class LLMBaseClass_zp:
         self._model = None
         self._processor = None
         self.model_or_model_path = model_or_model_path
+        self.adapter_path = adapter_path
         self.max_new_tokens = max_new_tokens
         self.model_load_mode = mode
         self.input_device = input_device
@@ -87,7 +89,19 @@ class LLMBaseClass_zp:
 
     @property
     def model(self): raise Exception('todo model')
+
+    @staticmethod
+    def model_merge_adapter(model, adapter_path=None):
+        if adapter_path is None: return model
+       
+        from peft import PeftModel
+        merged_model = PeftModel.from_pretrained(model, adapter_path)
+        merged_model = merged_model.merge_and_unload()
+        return merged_model
     
+    def _self_model_merge_adapter(self):
+        self._model = self.model_merge_adapter(self._model, self.adapter_path)
+
     @property
     def processor(self): 
         if self._processor is None:

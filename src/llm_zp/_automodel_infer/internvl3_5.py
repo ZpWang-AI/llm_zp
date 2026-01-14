@@ -29,6 +29,7 @@ class InternVL3_5(LLMBaseClass_zp):
                 self.model_or_model_path, 
                 **model_kwargs
             ).eval()
+            self._self_model_merge_adapter()
 
         return self._model
     

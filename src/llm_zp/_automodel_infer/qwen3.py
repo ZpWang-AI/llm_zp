@@ -24,15 +24,20 @@ class Qwen3(LLMBaseClass_zp):
                 raise Exception(f'wrong mode: {self.model_load_mode}')
             
             from transformers import AutoModelForCausalLM
-            if self._model is None:
-                self._model = AutoModelForCausalLM.from_pretrained(
-                    self.model_or_model_path, 
-                    **model_kwargs
-                ).eval()
+            self._model = AutoModelForCausalLM.from_pretrained(
+                self.model_or_model_path, 
+                **model_kwargs
+            ).eval()
+            self._self_model_merge_adapter()
         
         return self._model
 
-    def __call__(self, conversation):
+    def __call__(self, conversation:list=None, query:str=None):
+        if conversation is None:
+            assert query is not None
+            conversation = [{"role": "user", "content": query}]
+        else:
+            assert query is None
         return super().__call__(conversation=conversation)
 
 

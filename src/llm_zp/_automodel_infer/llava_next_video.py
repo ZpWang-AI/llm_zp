@@ -25,10 +25,10 @@ class LLaVA_NeXT_Video(LLMBaseClass_zp):
                 raise Exception(f'wrong mode: {self.model_load_mode}')
             
             from transformers import AutoModelForImageTextToText
-            if self._model is None:
-                self._model = AutoModelForImageTextToText.from_pretrained(
-                    self.model_or_model_path, 
-                    **model_kwargs
-                ).eval()
+            self._model = AutoModelForImageTextToText.from_pretrained(
+                self.model_or_model_path, 
+                **model_kwargs
+            ).eval()
+            self._self_model_merge_adapter()
         
         return self._model

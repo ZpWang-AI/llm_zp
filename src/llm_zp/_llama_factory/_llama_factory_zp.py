@@ -7,6 +7,15 @@ def LLaMAFactory_add_dataset(
     overwrite_dataset:bool=False,
     images:List[List[str]]=None, videos:List[List[str]]=None,
 ):
+    llamafactory_data_dir = path(llamafactory_data_dir)
+    dataset_info_json = llamafactory_data_dir/'dataset_info.json'
+    all_dataset_info = auto_load(dataset_info_json) if dataset_info_json.exists() else {}
+    if dataset_name in all_dataset_info:
+        if not overwrite_dataset: 
+            print(f'{dataset_name} already exists')
+            return
+            raise Exception(f'{dataset_name} already exists')
+            
     n = len(queries)
     assert len(answers)==n
     all_data = []
@@ -29,8 +38,6 @@ def LLaMAFactory_add_dataset(
         for _data,_videos in zip(all_data,videos):
             _data['videos'] = _videos
     
-    llamafactory_data_dir = path(llamafactory_data_dir)
-    dataset_info_json = llamafactory_data_dir/'dataset_info.json'
     data_filename = llamafactory_data_dir/'dataset'/f'{dataset_name}.json'
     auto_dump(all_data, data_filename)
     _dataset_info = {
@@ -45,9 +52,7 @@ def LLaMAFactory_add_dataset(
             "system_tag": "system"
         }
     }
-    all_dataset_info = auto_load(dataset_info_json) if dataset_info_json.exists() else {}
-    if dataset_name in all_dataset_info:
-        if not overwrite_dataset: raise Exception(f'{dataset_name} already exists')
+
     all_dataset_info[dataset_name] = _dataset_info
     auto_dump(all_dataset_info, dataset_info_json)
     print(f'> add {len(all_data)} samples into dataset {dataset_name}')
@@ -150,6 +155,7 @@ class LLaMAFactorySFTLora(LLaMAFactoryBase):
     # ===========================================
     lora_rank:int = 8
     learning_rate:float = 1.0e-4
+    gradient_accumulation_steps:int = 8
     num_train_epochs:float =  3.0
     max_samples:int = None
     # ===========================================
@@ -196,7 +202,6 @@ class LLaMAFactorySFTLora(LLaMAFactoryBase):
 
     ### train
     per_device_train_batch_size:int = 1
-    gradient_accumulation_steps:int = 8
     lr_scheduler_type:str = 'cosine'
     warmup_ratio:float =  0.1
     bf16:bool = True

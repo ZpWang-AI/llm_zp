@@ -93,6 +93,7 @@ class LLMBaseClass_zp:
     @staticmethod
     def model_merge_adapter(model, adapter_path=None):
         if adapter_path is None: return model
+        assert path(adapter_path).exists()
        
         from peft import PeftModel
         merged_model = PeftModel.from_pretrained(model, adapter_path)

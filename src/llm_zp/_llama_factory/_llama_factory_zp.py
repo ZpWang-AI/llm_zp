@@ -1,61 +1,74 @@
 from utils_zp import *
 
 
-def LLaMAFactory_add_dataset(
-    dataset_name:str, llamafactory_data_dir:Union[str,path],
-    queries:List[str], answers:List[str], 
-    overwrite_dataset:bool=False,
-    images:List[List[str]]=None, videos:List[List[str]]=None,
-):
-    llamafactory_data_dir = path(llamafactory_data_dir)
-    dataset_info_json = llamafactory_data_dir/'dataset_info.json'
-    all_dataset_info = auto_load(dataset_info_json) if dataset_info_json.exists() else {}
-    if dataset_name in all_dataset_info:
-        if not overwrite_dataset: 
-            print(f'{dataset_name} already exists')
-            return
-            raise Exception(f'{dataset_name} already exists')
-            
-    n = len(queries)
-    assert len(answers)==n
-    all_data = []
-    columns = ['messages']
-    for q,a in zip(queries,answers):
-        all_data.append({
-            'messages': [
-                {'content':q, 'role':'user'},
-                {'content':a, 'role':'assistant'},
-            ]
-        })
-    if images is not None:
-        assert len(images)==n
-        columns.append('images')
-        for _data,_images in zip(all_data,images):
-            _data['images'] = _images
-    if videos is not None:
-        assert len(videos)==n
-        columns.append('videos')
-        for _data,_videos in zip(all_data,videos):
-            _data['videos'] = _videos
+class LLaMAFactoryDataset:
+    @classmethod
+    def get_dataset_info_json(cls, llamafactory_data_dir:Union[str,path]) -> dict:
+        llamafactory_data_dir = path(llamafactory_data_dir)
+        dataset_info_json = llamafactory_data_dir/'dataset_info.json'
+        all_dataset_info = auto_load(dataset_info_json) if dataset_info_json.exists() else {}
+        return all_dataset_info
     
-    data_filename = llamafactory_data_dir/'dataset'/f'{dataset_name}.json'
-    auto_dump(all_data, data_filename)
-    _dataset_info = {
-        "file_name": data_filename,
-        "formatting": "sharegpt",
-        "columns": {col:col for col in columns},
-        "tags": {
-            "role_tag": "role",
-            "content_tag": "content",
-            "user_tag": "user",
-            "assistant_tag": "assistant",
-            "system_tag": "system"
-        }
-    }
+    @classmethod
+    def get_dataset_names(cls, llamafactory_data_dir:Union[str,path]):
+        return list(cls.get_dataset_info_json(llamafactory_data_dir).keys())
 
-    all_dataset_info[dataset_name] = _dataset_info
-    auto_dump(all_dataset_info, dataset_info_json)
-    print(f'> add {len(all_data)} samples into dataset {dataset_name}')
+    @classmethod
+    def add_dataset(
+        cls,
+        dataset_name:str, llamafactory_data_dir:Union[str,path],
+        queries:List[str], answers:List[str], 
+        overwrite_dataset:bool=False,
+        images:List[List[str]]=None, videos:List[List[str]]=None,
+    ):
+        llamafactory_data_dir = path(llamafactory_data_dir)
+        all_dataset_info = cls.get_dataset_info_json(llamafactory_data_dir)
+        if dataset_name in all_dataset_info:
+            if not overwrite_dataset: 
+                print(f'{dataset_name} already exists')
+                return
+                raise Exception(f'{dataset_name} already exists')
+                
+        n = len(queries)
+        assert len(answers)==n
+        all_data = []
+        columns = ['messages']
+        for q,a in zip(queries,answers):
+            all_data.append({
+                'messages': [
+                    {'content':q, 'role':'user'},
+                    {'content':a, 'role':'assistant'},
+                ]
+            })
+        if images is not None:
+            assert len(images)==n
+            columns.append('images')
+            for _data,_images in zip(all_data,images):
+                _data['images'] = _images
+        if videos is not None:
+            assert len(videos)==n
+            columns.append('videos')
+            for _data,_videos in zip(all_data,videos):
+                _data['videos'] = _videos
+        
+        data_filename = llamafactory_data_dir/'dataset'/f'{dataset_name}.json'
+        auto_dump(all_data, data_filename)
+        _dataset_info = {
+            "file_name": data_filename,
+            "formatting": "sharegpt",
+            "columns": {col:col for col in columns},
+            "tags": {
+                "role_tag": "role",
+                "content_tag": "content",
+                "user_tag": "user",
+                "assistant_tag": "assistant",
+                "system_tag": "system"
+            }
+        }
+
+        all_dataset_info[dataset_name] = _dataset_info
+        auto_dump(all_dataset_info, dataset_info_json)
+        print(f'> add {len(all_data)} samples into dataset {dataset_name}')
 
 
 class LLaMAFactoryBase:

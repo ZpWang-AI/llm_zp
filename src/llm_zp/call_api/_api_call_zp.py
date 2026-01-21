@@ -157,9 +157,17 @@ class APICalling_zp:
             )
             sorted_documents = []
             relevance_scores = []
-            for case in resp.output.results:
-                sorted_documents.append(case['document']['text'])
-                relevance_scores.append(case.relevance_score)
+            try:
+                for case in resp.output.results:
+                    sorted_documents.append(case['document']['text'])
+                    relevance_scores.append(case.relevance_score)
+            except Exception as e:
+                print(traceback.format_exc())
+                print(gap_line())
+                print(resp)
+                print(gap_line())
+                print('fail to get response from api')
+                exit()
             return sorted_documents, relevance_scores
         return self._decorator(func)(query,documents,top_n,instruct)
 

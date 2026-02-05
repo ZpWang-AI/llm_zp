@@ -69,6 +69,14 @@ class APICalling_zp:
         for d in decorator_list: func = d(func)
         return func
 
+    def _catch_err(self, info):
+        traceback.print_exc()
+        print(gap_line())
+        print(info)
+        print(gap_line())
+        print('fail to call the api')
+        exit()
+
     @property
     def openai_client(self): 
         import openai
@@ -92,7 +100,10 @@ class APICalling_zp:
                 messages=messages,
                 stream=False,
             )
-            answer = response.choices[0].message.content
+            try:
+                answer = response.choices[0].message.content
+            except:
+                self._catch_err(response)
             return answer
 
         return self._decorator(func)(messages)
@@ -104,10 +115,49 @@ class APICalling_zp:
                 input=query,
                 dimensions=dimensions,
             )
-            return response.data[0].embedding
+            try:
+                embedding = response.data[0].embedding
+            except:
+                self._catch_err()
+            return embedding
         
         return self._decorator(func)(query, dimensions=dimensions)
 
+    def chat_dashscope(self, query:str=None, messages:list=None,) -> str:
+        """
+~~~
+[
+    {"role": "system", "content": "you are a helpful assistant."},
+    {"role": "user", "content": "hello"}
+]
+~~~
+        """
+        if query is not None:
+            assert messages is None
+            messages = [{'role': 'user', 'content': query}]
+        else:
+            assert messages is not None
+
+        def func(messages:list):
+            from dashscope import Generation
+            response = Generation.call(
+                api_key=self.api_key,
+                model=self.model,  
+                messages=messages)
+            response = dict(response)
+            # print(response); exit()
+            try:
+                # answer = response['output']['text']
+                answer = response['output']['choices'][0]['message']['content']
+                if answer is None:
+                    print(response)
+                    raise Exception('> None output')
+            except:
+                self._catch_err(response)
+            return answer
+
+        return self._decorator(func)(messages)
+    
     def multimodal_chat_dashscope(self, messages:list) -> str:
         """
 ~~~
@@ -133,7 +183,10 @@ class APICalling_zp:
             response = dict(response)
             # print(response); exit()
             # answer = response['output']['choices'][0]['message']['content']
-            answer = response['output']['choices'][0]['message']['content'][0]['text']
+            try:
+                answer = response['output']['choices'][0]['message']['content'][0]['text']
+            except:
+                self._catch_err(response)
             return answer
 
         return self._decorator(func)(messages)
@@ -161,13 +214,8 @@ class APICalling_zp:
                 for case in resp.output.results:
                     sorted_documents.append(case['document']['text'])
                     relevance_scores.append(case.relevance_score)
-            except Exception as e:
-                print(traceback.format_exc())
-                print(gap_line())
-                print(resp)
-                print(gap_line())
-                print('fail to get response from api')
-                exit()
+            except:
+                self._catch_err(resp)
             return sorted_documents, relevance_scores
         return self._decorator(func)(query,documents,top_n,instruct)
 

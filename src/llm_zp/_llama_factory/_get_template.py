@@ -9,6 +9,7 @@ class LLaMAFactoryTemplate:
     intern_vl = 'intern_vl'
     llava_next_video = 'llava_next_video'
     
+    llama3 = 'llama3'
     qwen3 = 'qwen3'
     qwen3_nothink = 'qwen3_nothink'
 

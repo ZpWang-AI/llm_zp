@@ -67,6 +67,7 @@ class LLaMAFactoryDataset:
         }
 
         all_dataset_info[dataset_name] = _dataset_info
+        dataset_info_json = llamafactory_data_dir/'dataset_info.json'
         auto_dump(all_dataset_info, dataset_info_json)
         print(f'> add {len(all_data)} samples into dataset {dataset_name}')
 

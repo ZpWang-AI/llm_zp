@@ -29,9 +29,9 @@ class APICalling_zp:
         def new_func(messages, *args, **kwargs):
             k = f'{self.model} | {messages} | {args} | {kwargs}'
             v = _record_dic[k]
-            if v is not None: return v
+            if v: return v
             _ret = func(messages, *args, **kwargs)
-            _record_dic[k] = _ret
+            if _ret: _record_dic[k] = _ret
             return _ret
         return new_func
 

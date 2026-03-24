@@ -70,12 +70,12 @@ class APICalling_zp:
         return func
 
     def _catch_err(self, info):
-        traceback.print_exc()
-        print(gap_line())
+        # traceback.print_exc()
+        # print(gap_line())
+        print(gap_line('fail to call the api'))
         print(info)
         print(gap_line())
-        print('fail to call the api')
-        exit()
+        raise
 
     @property
     def openai_client(self): 
@@ -118,7 +118,7 @@ class APICalling_zp:
             try:
                 embedding = response.data[0].embedding
             except:
-                self._catch_err()
+                self._catch_err(response)
             return embedding
         
         return self._decorator(func)(query, dimensions=dimensions)

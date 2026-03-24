@@ -123,6 +123,23 @@ class APICalling_zp:
         
         return self._decorator(func)(query, dimensions=dimensions)
 
+    def embed_dashscope(self, query:str, dimensions:int) -> List[float]:
+        def func(query:str, dimensions:int):
+            from dashscope import TextEmbedding
+            response = TextEmbedding.call(
+                api_key=self.api_key,
+                model=self.model,
+                input=query,
+                dimensions=dimensions,
+            )
+            response = dict(response)
+            try:
+                embedding = response['output']['embeddings'][0]['embedding']
+                return embedding
+            except:
+                self._catch_err(response)
+        return self._decorator(func)(query, dimensions=dimensions)
+
     def chat_dashscope(self, query:str=None, messages:list=None,) -> str:
         """
 ~~~

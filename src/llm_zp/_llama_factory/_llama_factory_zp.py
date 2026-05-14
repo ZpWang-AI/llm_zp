@@ -244,8 +244,46 @@ class LLaMAFactorySFTLora(LLaMAFactoryBase):
                 env_dict={"CUDA_VISIBLE_DEVICES": cuda_visible},
             )
         except BaseException as err:
-            make_path(file_path=path(self.output_dir)/'_end')
+            make_path(file_path=path(self.output_dir)/'err_end')
             raise err
+        else:
+            make_path(file_path=path(self.output_dir)/'done_end')
+
+
+class LLaMAFactoryTokenization(LLaMAFactorySFTLora):
+    def update_model_to_tokenizer(self):
+        model_tokenizer_path = str(self.model_name_or_path) + '_tokenizer'
+        if not path(model_tokenizer_path).exists():
+            # TODO: copy model without param files endswith `safetensors`
+            pass
+        self.model_name_or_path = model_tokenizer_path
+
+    def start(self, llama_factory_dir, chunk_size=None, log_to_file=True):
+        llama_factory_dir = path(llama_factory_dir)
+        assert llama_factory_dir.exists()
+        os.chdir(llama_factory_dir)
+        
+        output_dir = path(self.output_dir); make_path(output_dir); print(output_dir)
+        yaml_file = output_dir / f'tokenize.yaml'
+        auto_dump(self.dict, yaml_file); print(f'> yaml file: {yaml_file}')
+        log_filepath = output_dir / '_run.log' if log_to_file else None
+        cmd = ["llamafactory-cli", "train", str(yaml_file)]
+        # cmd = f'CUDA_VISIBLE_DEVICES={cuda_visible} llamafactory-cli train {str(yaml_file)} &> {str(log_filepath)}'
+        # cmd = f'CUDA_VISIBLE_DEVICES={cuda_visible} llamafactory-cli train {str(yaml_file)} 2>&1 | tee {str(log_filepath)}'
+        try:
+            print('>', cmd)
+            # exit()
+            # os.system(cmd)
+            self.run_cmd(
+                cmd=cmd, 
+                log_filepath=log_filepath, 
+            )
+        except BaseException as err:
+            make_path(file_path=path(self.output_dir)/'err_end')
+            raise err
+        else:
+            make_path(file_path=path(self.output_dir)/'done_end')  
+
 
 
 @dataclass

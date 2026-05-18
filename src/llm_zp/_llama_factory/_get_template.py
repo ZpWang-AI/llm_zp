@@ -6,6 +6,7 @@ from .._automodel_infer import (
 
 class LLaMAFactoryTemplate:
     qwen2_vl = 'qwen2_vl'
+    qwen3_vl = 'qwen3_vl'
     intern_vl = 'intern_vl'
     llava_next_video = 'llava_next_video'
     

@@ -212,6 +212,7 @@ class LLaMAFactorySFTLora(LLaMAFactoryBase):
     plot_loss:bool = True
     overwrite_output_dir:bool = True
     save_only_model:bool = False
+    save_total_limit:int = None
     report_to:str = None  # choices: [none, wandb, tensorboard, swanlab, mlflow]
 
     ### train

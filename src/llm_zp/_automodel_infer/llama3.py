@@ -12,7 +12,7 @@ class Llama3(LLMBaseClass_zp):
         if self._model is None:
             if self.model_load_mode == 'bf16':
                 model_kwargs = {
-                    'torch_dtype': torch.bfloat16,
+                    'dtype': torch.bfloat16,
                     'low_cpu_mem_usage': True,
                     'trust_remote_code': True,
                     'device_map': 'auto',

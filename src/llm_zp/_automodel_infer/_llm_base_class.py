@@ -110,6 +110,7 @@ class LLMBaseClass_zp:
             self._processor = AutoProcessor.from_pretrained(
                 self.model_or_model_path,
                 use_fast=True,
+                fix_mistral_regex=True,
             )
         return self._processor
 

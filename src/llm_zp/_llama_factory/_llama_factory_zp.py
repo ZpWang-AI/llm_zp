@@ -206,6 +206,10 @@ class LLaMAFactorySFTLora(LLaMAFactoryBase):
     buffer_size:int = None
     tokenized_path:str = None  # str(DATA_DIR_SFT / 'tokenized_dataset' / f'{dataset_name}__{template}')
 
+    dataloader_pin_memory:bool = None
+    dataloader_prefetch_factor:int = None  # 让每个worker提前准备4个batch，减少GPU等待[reference:2]
+    # persistent_workers:bool = True  # 让worker进程在epoch间复用，避免反复创建的开销[reference:3][reference:4]
+
     ### output
     logging_steps:int = 10
     save_steps:int = 500

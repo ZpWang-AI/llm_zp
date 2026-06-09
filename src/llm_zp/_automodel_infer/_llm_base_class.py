@@ -1,5 +1,7 @@
 from utils_zp import *
 
+os.environ["FORCE_QWENVL_VIDEO_READER"] = "torchvision" # or "torchcodec"
+
 
 class ConversationInput_zp:
     """

@@ -14,15 +14,12 @@ class Qwen2_5_VL(LLMBaseClass_zp):
     def model(self):
         if self._model is None:
             if self.model_load_mode == 'bf16':
+                device_map = 'cuda:0' if self.input_device != 'auto' else 'auto'
                 model_kwargs = {
-                    # 'torch_dtype': torch.bfloat16,
                     'dtype': torch.bfloat16,
                     'low_cpu_mem_usage': True,
                     'trust_remote_code': True,
-                    'device_map': 'auto',
-                    # 'device_map': 'cuda',
-                    # 'use_flash_attn': True,
-                    # 'attn_implementation': 'flash_attention_2'
+                    'device_map': device_map,
                 }
             else:
                 raise Exception(f'wrong mode: {self.model_load_mode}')
@@ -66,4 +63,3 @@ class Qwen2_5_VL(LLMBaseClass_zp):
             **video_kwargs
         )
         return inputs
-    
